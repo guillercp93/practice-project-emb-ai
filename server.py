@@ -4,7 +4,7 @@
 '''
 
 from flask import Flask, render_template, request
-from sentiment_analysis import sentiment_analyzer
+from SentimentAnalysis.sentiment_analysis import sentiment_analyzer
 
 app = Flask(__name__)
 
@@ -18,11 +18,15 @@ def sent_analyzer():
     '''
     body = request.args.get('textToAnalyze')
     if not body:
-        return ({'message': 'Parameter not found'}, 400)
+        return ('Parameter not found', 400)
 
-    result = sentiment_analyzer(body.strip())
-    print(result)
-    return {result}
+    try:
+        result = sentiment_analyzer(body.strip())
+        label = result['documentSentiment']['label'].replace('SENT_', '')
+        score = result['documentSentiment']['score']
+        return f"The given text has been identified as {label} with a score of {score}."
+    except KeyError:
+        return ('An error has ocurred!', 500)
 
 
 @app.route("/")
@@ -34,6 +38,4 @@ def render_index_page():
 
 
 if __name__ == "__main__":
-    ''' This functions executes the flask app and deploys it on localhost:5000
-    '''  # TODO
     app.run(debug=True, port=5000)
